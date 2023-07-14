@@ -9,9 +9,19 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import java.security.Key;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Slf4j
@@ -38,6 +48,20 @@ public class JwtUtil {
 				.setIssuedAt(now) // 발급일
 				.signWith(key, signatureAlgorithm) // 암호화 알고리즘
 				.compact();
+	}
+
+	// JWT 토큰 인증 정보 조회
+	public Authentication getAuthentication(String token) {
+		Claims claims = getUserInfoFromToken(token);
+
+		Object authoritiesClaim = claims.get(AUTHORIZATION_KEY);
+
+		Collection<? extends GrantedAuthority> authorities = authoritiesClaim == null ? AuthorityUtils.NO_AUTHORITIES
+				: AuthorityUtils.commaSeparatedStringToAuthorityList(authoritiesClaim.toString());
+
+		User principal = new User(claims.getSubject(), "", authorities);
+
+		return new UsernamePasswordAuthenticationToken(principal,token, authorities);
 	}
 
 	public String getTokenFromHeader(HttpServletRequest request) {
@@ -67,4 +91,8 @@ public class JwtUtil {
 	public Claims getUserInfoFromToken(String token) {
 		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 	}
+
+
+
+
 }
