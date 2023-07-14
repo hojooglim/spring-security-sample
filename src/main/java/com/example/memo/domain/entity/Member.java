@@ -15,7 +15,6 @@ import lombok.Setter;
 @Table(name = "member")
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class Member {
 	@Id
 	private String email;
@@ -25,4 +24,24 @@ public class Member {
 	@ElementCollection
 	private Set<String> roles;
 	private LocalDateTime createdAt;
+
+	public Member(String email, String name, String password, Set<String> roles, LocalDateTime createdAt) {
+		this.email = email;
+		this.name = name;
+		this.password = password;
+		this.roles = roles;
+		this.createdAt = createdAt;
+	}
+
+	private Long kakaoId;
+	public Member(String email, String name, String password, Set<String> roles, LocalDateTime createdAt, Long kakaoId) {
+		this.email = email;
+		this.name = name;
+		this.password = password;
+		this.roles = roles;
+		this.createdAt = createdAt;
+		this.kakaoId = kakaoId;
+	}
+
+
 }
