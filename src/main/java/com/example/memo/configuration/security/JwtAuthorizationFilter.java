@@ -26,11 +26,10 @@ class JwtAuthorizationFilter extends OncePerRequestFilter {
 		String token = JwtUtil.getTokenFromHeader(request);
 
 		if(!JwtUtil.validateToken(token)){
-			Authentication authentication = JwtUtil.getAuthentication(token);
-			SecurityContextHolder.getContext().setAuthentication(authentication);
 			return;
 		}
 
+		SecurityContextHolder.getContext().setAuthentication(JwtUtil.getAuthentication(token));
 
 		// TODO : 요청에 들어온 JWT를 parsing해서 "ROLE_MEMBER" 권한이 있는지 확인하고, SecurityContextHolder에 context 설정하기
 		filterChain.doFilter(request, response);

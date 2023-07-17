@@ -1,5 +1,6 @@
 package com.example.memo.configuration.security;
 
+import com.example.memo.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebSecurityConfig {
 
 	private final AuthenticationConfiguration authenticationConfiguration;
+	private final MemberService memberService;
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
@@ -44,6 +46,11 @@ public class WebSecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.addFilter(jwtAuthenticationFilter())
 			.addFilterAfter(jwtAuthorizationFilter(), JwtAuthenticationFilter.class)
+			.rememberMe(rememberMeConfigurer -> rememberMeConfigurer
+					.key("key")
+					.rememberMeParameter("remember-me")
+					.tokenValiditySeconds(86400 * 30)
+					.userDetailsService(memberService))
 			.sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(
 				SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(httpRequests -> httpRequests
@@ -51,7 +58,6 @@ public class WebSecurityConfig {
 				.requestMatchers("/api/members/**").permitAll()
 				.requestMatchers("/api/user/**").permitAll()
 				.anyRequest().authenticated());
-
 		return httpSecurity.build();
 	}
 }
